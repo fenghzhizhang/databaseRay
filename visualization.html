@@ -296,7 +296,9 @@
 
         <div class="triple-view">
             <h3>📊 三元组数据展示（主语-关系-宾语）</h3>
-            <div id="tripleContainer"></div>
+            <div id="tripleContainer">
+                <div style="text-align:center;padding:20px;color:#999;">加载中...</div>
+            </div>
         </div>
 
         <div class="charts-container">
@@ -343,6 +345,12 @@
         let filteredData = [];
         let currentPage = 1;
         const itemsPerPage = 20;
+        let chartInstances = {
+            metalChart: null,
+            caseTypeChart: null,
+            yearChart: null,
+            exposureChart: null
+        };
 
         async function loadData() {
             try {
@@ -461,13 +469,17 @@
                 });
             });
 
-            container.innerHTML = sampleTriples.slice(0, 15).map(triple => `
-                <div class="triple-item">
-                    <div class="triple-subject">${triple.subject}</div>
-                    <div class="triple-predicate">${triple.predicate}</div>
-                    <div class="triple-object">${triple.object}</div>
-                </div>
-            `).join('');
+            if (sampleTriples.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">暂无三元组数据</div>';
+            } else {
+                container.innerHTML = sampleTriples.slice(0, 15).map(triple => `
+                    <div class="triple-item">
+                        <div class="triple-subject">${triple.subject}</div>
+                        <div class="triple-predicate">${triple.predicate}</div>
+                        <div class="triple-object">${triple.object}</div>
+                    </div>
+                `).join('');
+            }
         }
 
         function renderCharts() {
@@ -490,8 +502,12 @@
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10);
 
+            if (chartInstances.metalChart) {
+                chartInstances.metalChart.destroy();
+            }
+
             const ctx = document.getElementById('metalChart');
-            new Chart(ctx, {
+            chartInstances.metalChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: sortedMetals.map(m => m[0]),
@@ -530,8 +546,12 @@
                 });
             });
 
+            if (chartInstances.caseTypeChart) {
+                chartInstances.caseTypeChart.destroy();
+            }
+
             const ctx = document.getElementById('caseTypeChart');
-            new Chart(ctx, {
+            chartInstances.caseTypeChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['人类', '动物', '细胞'],
@@ -572,8 +592,12 @@
 
             const sortedYears = Object.entries(yearCounts).sort((a, b) => a[0] - b[0]);
 
+            if (chartInstances.yearChart) {
+                chartInstances.yearChart.destroy();
+            }
+
             const ctx = document.getElementById('yearChart');
-            new Chart(ctx, {
+            chartInstances.yearChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: sortedYears.map(y => y[0]),
@@ -620,8 +644,12 @@
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10);
 
+            if (chartInstances.exposureChart) {
+                chartInstances.exposureChart.destroy();
+            }
+
             const ctx = document.getElementById('exposureChart');
-            new Chart(ctx, {
+            chartInstances.exposureChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: sortedExposures.map(e => e[0]),
@@ -743,6 +771,7 @@
 
             currentPage = 1;
             updateStatistics();
+            renderCharts();
             renderTriples();
             renderTable();
         }

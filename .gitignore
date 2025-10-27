@@ -35,5 +35,4 @@ wheels/
 .DS_Store
 
 # Temp files
-temp1.txt
 *.tmp
